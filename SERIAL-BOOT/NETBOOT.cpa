@@ -1,0 +1,72 @@
+// Serial Boot
+
+
+//This program will copy itself over the old intitialization code and pull the program from serial then run it.
+
+//It is safe to assume that the stack is setup, we can remove the old function
+
+//Serial Boot requires the program to have the same stack size as this bios
+data .NETBIOS.INSTALL_LOC 1 0
+data .NETBIOS.BLOB_SIZE 1 0
+data .NETBIOS.ENTRY_LOC 1 0
+data .NETBIOS.BLOB_START 1 0
+
+define NETBIOS_INSTALL
+   :INSTALL_LOOP
+   COM 3
+   MOV IO [A]
+   INC A
+   CMP A [.NETBIOS.BLOB_SIZE]
+   JL :INSTALL_LOOP
+   JMP [.NETBIOS.ENTRY_LOC]
+   :NETBIOS_END
+end
+
+define .NETBIOS.I 1 0
+
+define MAIN
+	:SERIAL_WAIT
+	NOP
+	NOP
+	NOP
+	COM 0
+	CMP IO 0
+	JE :SERIAL_WAIT
+	
+	COM 3
+	MOV IO [.NETBIOS.BLOB_SIZE]
+	COM 3
+	MOV IO [.NETBIOS.ENTRY_LOC]
+	COM 3
+	MOV IO [.NETBIOS.BLOB_START]
+	
+	//calculate the size of the netbios install function
+	MOV .NETBIOS.LOOP A
+	MOV .NETBIOS.END B
+	SUB A B
+	//B has Size
+	PUSH B
+	
+	
+	MOV .CPUPA.SETUP A
+	MOV :INSTALL_LOOP C
+	MOV 0 [.NETBIOS.I]
+	
+	
+	:COPY_STEP
+	   MOV [A] B
+	   MOV B [C]
+	   MOV [.NETBIOS.I] B
+	   INC B
+	   CMP B [ST]
+	   JE :OUT
+	   INC A
+	   INC C
+	   JMP :COPY_STEP
+	:OUT
+	POP A
+	JMP :INSTALL_LOOP
+end
+	
+	
+	
