@@ -1,0 +1,406 @@
+//This bios is a self test.
+//It tests most instructions and functions
+//Outputs results to Serial
+
+
+define .TEXT.BEGIN "Starting Self Test\n"
+define .TEXT.PASS "PASS\n"
+define .TEXT.FAIL "FAIL\n"
+define .TEXT.ALU "ALU: \n"
+define .TEXT.REG "Registers: \n"
+define .TEXT.MEM "Memory Controller: \n"
+define .TEXT.ASSEMBLY "Assembly Features: \n"
+define .TEXT.JUMPS "JMP: "
+define .TEXT.STACK "Stack: "
+define .TEXT.OVERALL "Overall: "
+define .TEXT.ADD "   ADD: "
+define .TEXT.SUB "   SUB: "
+define .TEXT.MUL "   MUL: "
+define .TEXT.DIV "   DIV: "
+define .TEXT.MOD "   MOD: "
+define .TEXT.SMOV "    BASIC: "
+define .TEXT.MMOV "   ZERO: "
+
+define MAIN
+
+
+end
+
+
+define .ALU_STATUS 1 0
+
+define ALU_TEST
+	MOV .TEXT.ALU A
+	CALL SERIAL_OUT
+	
+	//ADD
+		MOV .TEXT.ADD A 
+		CALL SERIAL_OUT
+		
+		MOV 22032 A
+		MOV 32631 B
+		ADD A B
+		CMP B 54663
+		JE :A1
+		JMP :ADD_FAIL
+		:A1
+		MOV 4578 A
+		ADD A A
+		CMP A 9156
+        JE :A2
+		JMP :ADD_FAIL
+		:A2
+		//ROLLOVER
+		MOV 65534 A
+		MOV 2 B
+		ADD B A
+		CMP A 0
+        JE :A3
+		JMP :ADD_FAIL
+		:A3
+		MOV 65534 A
+		MOV 5 B
+		ADD B A
+		CMP A 3
+        JE :A4
+		JMP :ADD_FAIL
+		:A4
+		
+		//ADD PASS
+			MOV .TEXT.PASS A
+			CALL SERIAL_OUT
+			JMP :ADD_NEXT
+		:ADD_FAIL
+			MOV 1 [.ALU_STATUS]
+			MOV .TEXT.FAIL A
+			CALL SERIAL_OUT
+		:ADD_NEXT
+	//SUB
+		MOV .TEXT.SUB A 
+		CALL SERIAL_OUT
+		
+		MOV 22032 A
+		MOV 32631 B
+		SUB A B
+		CMP B 10599
+		JE :A5
+		JMP :SUB_FAIL
+		:A5
+		MOV 65535 A
+		SUB A A
+		CMP A 0
+        JE :A6
+		JMP :SUB_FAIL
+		:A6
+		//ROLLOVER
+		MOV 1 A1
+		MOV 2 B
+		ADD B A
+		CMP A 65535
+        JE :A7
+		JMP :SUB_FAIL
+		:A7
+		
+		//SUB PASS
+			MOV .TEXT.PASS A
+			CALL SERIAL_OUT
+			JMP :SUB_NEXT
+		:SUB_FAIL
+			MOV 1 [.ALU_STATUS]
+			MOV .TEXT.FAIL A
+			CALL SERIAL_OUT
+		:SUB_NEXT
+	//MUL
+		MOV .TEXT.MUL A 
+		CALL SERIAL_OUT
+			
+		MOV 53 A
+		MOV 224 B
+		MUL A B
+		CMP B 11872
+		
+		JE :A8
+		JMP :MUL_FAIL
+		:A8
+		
+		MOV 129 A
+		MUL A A
+		CMP A 16641
+		
+        JE :A9
+		JMP :MUL_FAIL
+		:A9
+
+		//ROLLOVER
+		
+		MOV 30000 A
+		MOV 4 B
+		MUL B A
+		CMP A 54465
+		
+        JE :A10
+		JMP :MUL_FAIL
+		:A10
+		
+		MOV 10000 A
+		MUL B A
+		CMP A 59125
+		
+        JE :A11
+		JMP :MUL_FAIL
+		:A11
+		
+		//MUL PASS
+			MOV .TEXT.PASS A
+			CALL SERIAL_OUT
+			JMP :MUL_NEXT
+		:MUL_FAIL
+			MOV 1 [.ALU_STATUS]
+			MOV .TEXT.FAIL A
+			CALL SERIAL_OUT
+		:MUL_NEXT
+	//DIV
+		MOV .TEXT.DIV A 
+		CALL SERIAL_OUT
+		
+		MOV 9 A
+		MOV 3 B
+		DIV B A
+		CMP A 3
+		
+        JE :A12
+		JMP :DIV_FAIL
+		:A12
+		
+		
+		MOV 50000 A
+		MOV 1000 B
+		DIV B A
+		CMP A 50
+		
+        JE :A13
+		JMP :DIV_FAIL
+		:A13
+		
+		MOV 10 A
+		MOV 3 B
+		DIV B A
+		CMP A 3
+		
+        JE :A14
+		JMP :DIV_FAIL
+		:A14
+
+		MOV 20 A
+		MOV 3 B
+		DIV B A
+		CMP A 6
+		
+        JE :A15
+		JMP :DIV_FAIL
+		:A15
+		
+		//DIV PASS
+			MOV .TEXT.PASS A
+			CALL SERIAL_OUT
+			JMP :DIV_NEXT
+		:DIV_FAIL
+			MOV 1 [.ALU_STATUS]
+			MOV .TEXT.FAIL A
+			CALL SERIAL_OUT
+		:DIV_NEXT
+	//MOD
+		MOV .TEXT.MOD A 
+		CALL SERIAL_OUT
+		
+		MOV 9 A
+		MOV 3 B
+		MOD B A
+		CMP A 0
+		
+        JE :A12
+		JMP :MOD_FAIL
+		:A12
+		
+		
+		MOV 50000 A
+		MOV 36 B
+		MOD B A
+		CMP A 32
+		
+        JE :A13
+		JMP :MOD_FAIL
+		:A13
+		
+		MOV 10 A
+		MOV 3 B
+		MOD B A
+		CMP A 1
+		
+        JE :A14
+		JMP :MOD_FAIL
+		:A14
+
+		MOV 2121 A
+		MOV 6521 B
+		MOD B A
+		CMP A 2121
+		
+        JE :A15
+		JMP :MOD_FAIL
+		:A15
+		
+		//MOD PASS
+			MOV .TEXT.PASS A
+			CALL SERIAL_OUT
+			JMP :MOD_NEXT
+		:MOD_FAIL
+			MOV 1 [.ALU_STATUS]
+			MOV .TEXT.FAIL A
+			CALL SERIAL_OUT
+		:MOD_NEXT
+	MOV [.TEXT.OVERALL] A 
+	CALL SERIAL_OUT
+	
+	MOV [.ALU_STATUS] A 
+	CMP A 1
+	JE :ALU_FAIL
+	
+	//Pass Default
+	MOV .TEXT.PASS
+	JMP :ALU_EXIT
+	:ALU_FAIL
+		MOV .TEXT.FAIL
+	:ALU_EXIT
+		CALL SERIAL_OUT
+end
+
+
+
+define .REG.TEMP 1 0
+define REG_TEST
+	MOV .TEXT.REG A
+	CALL SERIAL_OUT
+	
+	MOV .TEXT.SMOV A 
+	CALL SERIAL_OUT
+	
+	
+	MOV 65332 A 
+	MOV 65333 B 
+	MOV 65331 C 
+	MOV 65330 S
+	CMP A 65332
+	JNE :SIMPLE_MOV_FAIL
+	CMP B 65333
+	JNE :SIMPLE_MOV_FAIL
+	CMP C 65331
+	JNE :SIMPLE_MOV_FAIL
+	CMP S 65330
+	JNE :SIMPLE_MOV_FAIL
+	
+	MOV .TEXT.PASS A 
+	CALL SERIAL_OUT
+	JMP :SMOV_PASS
+	:SIMPLE_MOV_FAIL
+		MOV .TEXT.FAIL A 
+		CALL SERIAL_OUT
+	:SMOV_PASS
+	
+	//Pass Default
+	MOV .TEXT.PASS
+	JMP :ALU_EXIT
+	:ALU_FAIL
+		MOV .TEXT.FAIL
+	:ALU_EXIT
+		CALL SERIAL_OUT
+end
+
+define MEM_TEST
+	MOV .TEXT.MEM A
+	CALL SERIAL_OUT
+	
+	
+	
+	
+	//Pass Default
+	MOV .TEXT.PASS
+	JMP :ALU_EXIT
+	:ALU_FAIL
+		MOV .TEXT.FAIL
+	:ALU_EXIT
+		CALL SERIAL_OUT
+end
+
+define ASM_TEST
+	MOV .TEXT.ALU A
+	CALL SERIAL_OUT
+	
+	
+	
+	
+	//Pass Default
+	MOV .TEXT.PASS
+	JMP :ALU_EXIT
+	:ALU_FAIL
+		MOV .TEXT.FAIL
+	:ALU_EXIT
+		CALL SERIAL_OUT
+end
+
+define JMP_TEST
+	MOV .TEXT.ALU A
+	CALL SERIAL_OUT
+	
+	
+	
+	
+	//Pass Default
+	MOV .TEXT.PASS
+	JMP :ALU_EXIT
+	:ALU_FAIL
+		MOV .TEXT.FAIL
+	:ALU_EXIT
+		CALL SERIAL_OUT
+end
+
+define STACK_TEST
+	MOV .TEXT.STACK A
+	CALL SERIAL_OUT
+	
+	
+	
+	
+	//Pass Default
+	MOV .TEXT.PASS
+	JMP :STACK_EXIT
+	:STACK_FAIL
+		MOV .TEXT.FAIL
+	:STACK_EXIT
+		CALL SERIAL_OUT
+end
+
+
+
+//Argument is A : Pointer to string
+define SERIAL_OUT
+	PUSH A
+	PUSH IO
+	:SERIAL_LOOP
+		CMP [A] 0
+		JE :SERIAL_LOOP_OUT
+		:WAIT_FOR_BYTE
+			NOP
+			COM 1
+			NOP
+			CMP IO 1
+		JE :WAIT_FOR_BYTE
+		MOV [A] IO
+		COM 2
+		NOP
+		INC A
+	JMP :SERIAL_LOOP
+	:SERIAL_LOOP_OUT
+	POP IO
+	POP A
+end
